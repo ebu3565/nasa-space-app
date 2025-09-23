@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Odyssey - NASA Space App Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5)), 
+                        url('image/New\ folder/main.jpg');
+            background-size: cover;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        
+        .btn1 {
+            background: rgba(158, 45, 186, 1);
+            border: 1px solid #ffffff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }        
+        .btn2 {
+            background: rgba(49, 207, 235, 1);
+            border: 1px solid #ffffff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        .btn1:hover {
+            background:  rgb(117, 39, 137);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        .btn2:hover {
+            background: rgb(56, 160, 179);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* Screen Styles */
+        .screen {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            text-align: center;
+        }
+        
+        .active {
+            display: flex;
+        }
+        
+        /* Title Screen */
+        #title-screen {
+            animation: fadeIn 1.5s;
+        }
+        
+        .game-title {
+            font-size: 6rem;
+            margin-bottom: 0.51rem;
+            color: #4cc9f0;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+            letter-spacing: 3px;
+        }
+
+        
+        .start-btn {
+            background: linear-gradient(45deg, #f72585, #4361ee);
+            padding: 20px 60px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            color: #ffffff;
+        }
+        
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(247, 37, 133, 0.5);
+        }
+        
+        /* Login Screen */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+        }
+        
+        .avatar-side {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 90%; /* 20% more than login form */
+            position: relative;
+            margin-top: -100px;
+        }
+        
+        .avatar-img {
+            height: 100%;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 0 15px rgba(76, 201, 240, 0.7));
+        }
+        
+        .login-form {
+            background: rgba(13, 27, 42, 0.8);
+            padding: 30px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 0 20px rgba(76, 201, 240, 0.3);
+            flex: 1;
+            z-index: 2;
+            position: relative;
+            margin-top: -120px;
+        }
+        
+        .form-title {
+            font-size: 2rem;
+            color: #4cc9f0;
+            margin-bottom: -50px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            color: white;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #4361ee;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, #4361ee, #3a0ca3);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .login-btn:hover {
+            background: linear-gradient(45deg, #3a0ca3, #4361ee);
+        }
+        
+        /* Character Selection Screen */
+        .selection-title {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #4cc9f0;
+        }
+        
+        .characters {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .character-option {
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(13, 27, 42, 0.5);
+        }
+        
+        .character-option:hover {
+            background: rgba(58, 12, 163, 0.3);
+            transform: translateY(-5px);
+        }
+        
+        .character-option.selected {
+            background: rgba(58, 12, 163, 0.5);
+            box-shadow: 0 0 15px rgba(76, 201, 240, 0.5);
+        }
+        
+        .character-large {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .character-large ,h3,p{
+          color: white;
+        }
+
+        .character-large img {
+            height: 100%;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(76, 201, 240, 0.7));
+        }
+        
+        .select-btn {
+            padding: 12px 40px;
+            background: linear-gradient(45deg, #f72585, #4361ee);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        
+        /* Introduction Screen */
+        .intro-screen-container {
+            display: flex;
+            width: 100%;
+            max-width: 1000px;
+            align-items: flex-start;
+        }
+        
+        .character-left {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .intro-character {
+            height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .intro-character img {
+            height: 100%;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(76, 201, 240, 0.8));
+        }
+        
+        .message-right {
+            flex: 0 0 65%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 100px;
+        }
+        
+        .message-container {
+            background: rgba(13, 27, 42, 0.9);
+            border-radius: 15px;
+            padding: 40px;
+            width: 100%;
+            box-shadow: 0 0 25px rgba(76, 201, 240, 0.5);
+            border: 1px solid rgba(76, 201, 240, 0.3);
+            margin-bottom: 30px;
+        }
+        
+        .message-title {
+            font-size: 1.8rem;
+            color: #4cc9f0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .message-text {
+            color: white;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            text-align: center;
+        }
+        
+        .intro-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .intro-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .skip-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .skip-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .next-btn {
+            background: linear-gradient(45deg, #4361ee, #3a0ca3);
+            color: white;
+            padding-right: 20px;
+        }
+        
+        .next-btn:hover {
+            background: linear-gradient(45deg, #3a0ca3, #4361ee);
+        }
+        
+        .next-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        .float {
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        /* Stars Animation */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        #imageid{
+            width: 95%;
+            height: 95%;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            .game-title {
+                font-size: 2.5rem;
+            }
+            
+            .login-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .avatar-side {
+                height: auto;
+                width: 100%;
+                max-height: 150px;
+            }
+            
+            .avatar-img {
+                height: 150px;
+                width: auto;
+            }
+            
+            .characters {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .intro-screen-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .character-left {
+                flex: 0 0 auto;
+                margin-bottom: 20px;
+            }
+            
+            .intro-character {
+                height: 250px;
+            }
+            
+            .message-right {
+                flex: 0 0 auto;
+                width: 100%;
+            }
+            
+            .message-container {
+                padding: 30px 20px;
+            }
+        }
+
+
+
+
+  /* Mission Control Screen Styles */
+        .mission-control-container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            align-items: flex-start;
+        }
+        
+        .mission-character {
+            flex: 0 0 10%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .mission-character img {
+            height: 500px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(76, 201, 240, 0.8));
+        }
+        
+        .mission-content {
+            flex: 0 0 60%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .video-and-controls {
+          display: flex;
+          gap: 20px;
+        }
+        
+        .mission-title {
+            background: rgba(13, 27, 42, 0.9);
+            border-radius: 10px;
+            padding: 8px 26px;
+            text-align: center;
+            color: #4cc9f0;
+            font-size: 1.8rem;
+            box-shadow: 0 0 15px rgba(76, 201, 240, 0.4);
+            border: 1px solid rgba(76, 201, 240, 0.3);
+        }
+        
+        .video-container {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            padding-top: 35%; /* 16:9 Aspect Ratio */
+            box-shadow: 0 0 20px rgba(76, 201, 240, 0.5);
+            border: 1px solid rgba(76, 201, 240, 0.3);
+        }
+        
+        .video-container iframe,
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+.mission-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 200px;
+            margin-top: 41px;
+            margin-left: 28px;
+        }
+        
+        .control-btn {
+            background: linear-gradient(45deg, #4361ee, #3a0ca3);
+            border: none;
+            border-radius: 8px;
+            padding: 15px;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            width: 100%;
+        }
+        
+        .control-btn:hover {
+            background: linear-gradient(45deg, #3a0ca3, #4361ee);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .mission-nav {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .nav-btn {
+            padding: 12px 25px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .next-mission-btn {
+            background: linear-gradient(45deg, #f72585, #4361ee);
+            padding-right: 20px;
+        }
+        
+        .next-mission-btn:hover {
+            background: linear-gradient(45deg, #4361ee, #f72585);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 900px) {
+            .video-and-controls {
+                flex-direction: column;
+            }
+            
+            .mission-controls {
+                flex-direction: row;
+                flex-wrap: wrap;
+                width: 100%;
+            }
+            
+            .control-btn {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 900px) {
+            .mission-control-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .mission-character {
+                flex: 0 0 auto;
+                margin-bottom: 20px;
+            }
+            
+            .mission-character img {
+                height: 250px;
+            }
+            
+            .mission-content {
+                flex: 0 0 auto;
+                width: 100%;
+            }
+            
+            .mission-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+        /*new style*/
+        .my-text {
+            font-size: 50px;
+            margin-bottom: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(to bottom, white 55%, yellow 45%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 6px 8px rgba(0, 0, 0, 0.4);
+        }
+        /*video style*/
+           .video-controls {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        justify-content: center;
+    }
+    
+    .video-controls button {
+        background: rgba(76, 201, 240, 0.3);
+        border: 1px solid #4cc9f0;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    .video-controls button:hover {
+        background: rgba(76, 201, 240, 0.5);
+    }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <header>
+            <button class="btn1 back-btn" id="back-btn">← Back</button>
+            <button class="btn2 settings-btn" id="settings-btn">⚙ Settings</button>
+        </header>
+        
+        <!-- Title Screen -->
+        <div class="screen active" id="title-screen">
+            <h1 class="game-title">SCRAP VENTURE</h1>
+            <p class="game-subtitle my-text">NASA Space App Challenge</p>
+            <button class="start-btn pulse" id="start-btn">Start Game</button>
+        </div>
+        
+        <!-- Login Screen -->
+        <div class="screen" id="login-screen">
+            <h2 class="form-title">Mission Control Access</h2>
+            <div class="login-container">
+                <div class="avatar-side float">
+                    <img id="imageid" src="image/male avatar/main male.png" alt="Male Astronaut" class="avatar-img">
+                </div>
+                
+                <form class="login-form" id="login-form">
+                    <div class="input-group">
+                        <label for="username">User Name</label>
+                        <input type="text" id="username" placeholder="Enter your Name" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter your Password" required>
+                    </div>
+                    <button type="submit" class="login-btn">Authenticate</button>
+                </form>
+                
+                <div class="avatar-side float" style="animation-delay: 0.5s">
+                    <img id="imageid" src="image/female avatar/main female.png" alt="Female Astronaut" class="avatar-img">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Character Selection Screen -->
+        <div class="screen" id="character-screen">
+            <h2 class="selection-title">Select Your Avatar</h2>
+            <div class="characters">
+                <div class="character-option" data-gender="male">
+                    <div class="character-large">
+                        <img src="image/male avatar/main male.png" alt="Male Astronaut">
+                    </div>
+                    <h3>Male Astronaut</h3>
+                    <p>Commander</p>
+                </div>
+                <div class="character-option" data-gender="female">
+                    <div class="character-large">
+                        <img src="image/female avatar/main female.png" alt="Female Astronaut">
+                    </div>
+                    <h3>Female Astronaut</h3>
+                    <p>Science Officer</p>
+                </div>
+            </div>
+            <button class="select-btn" id="select-btn">Confirm Selection</button>
+        </div>
+        
+        <!-- Introduction Screen -->
+        <div class="screen" id="intro-screen">
+            <div class="intro-screen-container">
+                <div class="character-left">
+                    <div class="intro-character" id="intro-character">
+                        <!-- Character image will be inserted here by JavaScript -->
+                    </div>
+                </div>
+                <div class="message-right">
+                    <div class="message-container">
+                        <h2 class="message-title" id="message-title">Mission Briefing</h2>
+                        <p class="message-text" id="message-text">
+                            <!-- Introduction text will be inserted here by JavaScript -->
+                        </p>
+                    </div>
+                    <div class="intro-buttons">
+                        <button class="intro-btn skip-btn" id="skip-btn">Skip Introduction</button>
+                        <button class="intro-btn next-btn" id="next-btn">
+                            Next
+                            <span class="next-icon">→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+         <!-- New Mission Control Screen -->
+        <div class="screen" id="mission-screen">
+            <div class="mission-control-container">
+                <div class="mission-character">
+                    <!-- Character image will be inserted here by JavaScript -->
+                </div>
+               <div class="mission-content">
+    <div class="mission-title">
+        Mission Control: Space Debris Collection
+    </div>
+    <div class="video-and-controls">
+    <div class="video-container">
+        <video id="mission-video" controls>
+            <source src="image/video/lv_0_20240917125331.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div class="video-controls">
+            <button id="play-btn">▶ Play</button>
+            <button id="pause-btn">⏸ Pause</button>
+            <button id="mute-btn">🔊 Sound</button>
+        </div>
+    </div>
+
+    </div>
+    <div class="mission-nav">
+        <button class="nav-btn" id="prev-mission-btn">Previous</button>
+        <button class="nav-btn next-mission-btn" id="next-mission-btn">
+            Next Mission <span class="next-icon">→</span>
+        </button>
+    </div>
+</div>
+
+        <div class="mission-controls">
+            <button class="control-btn" id="map-btn">
+                <span>🗺️</span> Map
+            </button>
+            <button class="control-btn" id="quiz-btn">
+                <span>❓</span> Quiz
+            </button>
+            <button class="control-btn" id="score-btn">
+                <span>🏆</span> Score
+            </button>
+            <button class="control-btn" id="challenge-btn">
+                <span>⚡</span> Challenge
+            </button>
+            <button class="control-btn" id="challenge-btn">
+                <span>♻️</span> Indie Game
+            </button>
+        </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const titleScreen = document.getElementById('title-screen');
+        const loginScreen = document.getElementById('login-screen');
+        const characterScreen = document.getElementById('character-screen');
+        const introScreen = document.getElementById('intro-screen');
+        const startBtn = document.getElementById('start-btn');
+        const loginForm = document.getElementById('login-form');
+        const backBtn = document.getElementById('back-btn');
+        const settingsBtn = document.getElementById('settings-btn');
+        const characterOptions = document.querySelectorAll('.character-option');
+        const selectBtn = document.getElementById('select-btn');
+        const introCharacter = document.getElementById('intro-character');
+        const messageTitle = document.getElementById('message-title');
+        const messageText = document.getElementById('message-text');
+        const skipBtn = document.getElementById('skip-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        const missionScreen = document.getElementById('mission-screen');
+        const missionCharacter = document.querySelector('.mission-character');
+        const prevMissionBtn = document.getElementById('prev-mission-btn');
+        const nextMissionBtn = document.getElementById('next-mission-btn');
+        const mapBtn = document.getElementById('map-btn');
+        const quizBtn = document.getElementById('quiz-btn');
+        const scoreBtn = document.getElementById('score-btn');
+        const challengeBtn = document.getElementById('challenge-btn');
+        
+        // Current screen state
+        let currentScreen = 'title';
+        let selectedCharacter = null;
+        let username = '';
+        
+        // Game introduction content
+        const introContent = {
+            male: [
+                {
+                    title: "WELCOME ABOARD, COMMANDER!",
+                    text: "Hi {username}! I'm your mission guide, and I'll be assisting you throughout this space adventure. As the commander, your strategic decisions will determine our success in navigating through space debris and collecting valuable resources."
+                },
+                {
+                    title: "YOUR RESPONSIBILITIES",
+                    text: "Your expertise in navigation and resource management will be crucial for surviving the challenges ahead. You'll be responsible for the safety of your crew and the success of the mission."
+                },
+                {
+                    title: "MISSION OBJECTIVES",
+                    text: "Collect space resources, avoid cosmic hazards, and return safely to base. Your leadership will determine the success of this critical mission."
+                }
+            ],
+            female: [
+                {
+                    title: "WELCOME ABOARD, SCIENCE OFFICER!",
+                    text: "Hi {username}! I'm your mission guide, and I'll be assisting you throughout this scientific journey. Your analytical skills are needed to study alien artifacts and cosmic phenomena that we'll encounter."
+                },
+                {
+                    title: "YOUR RESPONSIBILITIES",
+                    text: "You'll be analyzing unknown elements, discovering new resources, and providing crucial data for mission success. Your problem-solving abilities will be tested to the limit."
+                },
+                {
+                    title: "MISSION OBJECTIVES",
+                    text: "Document alien technology, analyze cosmic phenomena, and ensure the scientific success of this mission. Your discoveries could change our understanding of the universe."
+                }
+            ]
+        };
+        
+        let currentIntroPage = 0;
+        
+        // Initialize stars background
+        function initStars() {
+            const starsContainer = document.getElementById('stars');
+            const starsCount = 200;
+            
+            for (let i = 0; i < starsCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // Random size between 1-3px
+                const size = Math.random() * 2 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                // Random position
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                
+                // Random opacity
+                star.style.opacity = Math.random();
+                
+                // Animation
+                star.style.animation = `twinkle ${Math.random() * 5 + 3}s infinite alternate`;
+                
+                starsContainer.appendChild(star);
+            }
+            
+            // Add CSS for twinkle animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes twinkle {
+                    0% { opacity: 0.3; }
+                    100% { opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Switch between screens
+        function showScreen(screenName) {
+            // Hide all screens
+            titleScreen.classList.remove('active');
+            loginScreen.classList.remove('active');
+            characterScreen.classList.remove('active');
+            introScreen.classList.remove('active');
+            missionScreen.classList.remove('active');
+            
+            // Show the requested screen
+            switch(screenName) {
+                case 'title':
+                    titleScreen.classList.add('active');
+                    backBtn.style.visibility = 'hidden';
+                    currentScreen = 'title';
+                    break;
+                case 'login':
+                    loginScreen.classList.add('active');
+                    backBtn.style.visibility = 'visible';
+                    currentScreen = 'login';
+                    break;
+                case 'character':
+                    characterScreen.classList.add('active');
+                    backBtn.style.visibility = 'visible';
+                    currentScreen = 'character';
+                    break;
+                case 'intro':
+                    introScreen.classList.add('active');
+                    backBtn.style.visibility = 'visible';
+                    currentScreen = 'intro';
+                    break;
+                 case 'mission':
+                    missionScreen.classList.add('active');
+                    backBtn.style.visibility = 'visible';
+                    currentScreen = 'mission';
+                    break;    
+            }
+        }
+        
+        // Handle back button
+        backBtn.addEventListener('click', () => {
+            if (currentScreen === 'login') {
+                showScreen('title');
+            } else if (currentScreen === 'character') {
+                showScreen('login');
+            } else if (currentScreen === 'intro') {
+                showScreen('character');
+            } else if (currentScreen === 'mission') {
+                showScreen('intro');
+            }
+        });
+        
+        // Handle settings button
+        settingsBtn.addEventListener('click', () => {
+            alert('Game settings would appear here!');
+        });
+        
+        // Start button - go to login screen
+        startBtn.addEventListener('click', () => {
+            showScreen('login');
+        });
+        
+        // Login form submission
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple validation
+            if (username && password) {
+                showScreen('character');
+            } else {
+                alert('Please enter both username and password!');
+            }
+        });
+        
+        // Character selection
+        characterOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remove selected class from all options
+                characterOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Add selected class to clicked option
+                option.classList.add('selected');
+                
+                // Store selected character
+                selectedCharacter = option.getAttribute('data-gender');
+            });
+        });
+        
+        // Show introduction for selected character
+        function showCharacterIntro() {
+            if (!selectedCharacter) return;
+            
+            // Reset intro page
+            currentIntroPage = 0;
+            
+            // Create and add character image
+            const img = document.createElement('img');
+            img.src = selectedCharacter === 'male' 
+                ? 'image/male avatar/main male.png' 
+                : 'image/female avatar/main female.png';
+            img.alt = `${selectedCharacter} Astronaut`;
+            
+            // Clear previous content
+            introCharacter.innerHTML = '';
+            introCharacter.appendChild(img);
+            
+            // Show first page of intro
+            updateIntroText();
+        }
+
+
+
+// Function to setup mission screen
+function setupMissionScreen() {
+    // Clear previous content
+    missionCharacter.innerHTML = '';
+    
+    // Create and add character image
+    const img = document.createElement('img');
+    img.src = selectedCharacter === 'male' 
+        ? 'image/male avatar/main male.png' 
+        : 'image/female avatar/main female.png';
+    img.alt = `${selectedCharacter} Astronaut`;
+    
+    missionCharacter.appendChild(img);
+    
+    // Show mission screen
+    showScreen('mission');
+    
+    // Try to auto-play video (may require user interaction on some browsers)
+    setTimeout(() => {
+        missionVideo.play().catch(e => {
+            console.log("Auto-play prevented:", e);
+            // Browser requires user interaction to play video
+        });
+    }, 1000);
+}
+
+// Update skip introduction and next button to go to mission screen
+skipBtn.addEventListener('click', () => {
+    setupMissionScreen();
+});
+
+nextBtn.addEventListener('click', () => {
+    if (currentIntroPage < introContent[selectedCharacter].length - 1) {
+        currentIntroPage++;
+        updateIntroText();
+    } else {
+        setupMissionScreen();
+    }
+});
+
+// Add event listeners for mission control buttons
+mapBtn.addEventListener('click', () => {
+    alert('Map feature would open here!');
+});
+
+quizBtn.addEventListener('click', () => {
+    alert('Quiz challenge would start here!');
+});
+
+scoreBtn.addEventListener('click', () => {
+    alert('Your score would be displayed here!');
+});
+
+challengeBtn.addEventListener('click', () => {
+    alert('Special challenge would begin here!');
+});
+
+prevMissionBtn.addEventListener('click', () => {
+    alert('Previous mission would load here!');
+});
+
+nextMissionBtn.addEventListener('click', () => {
+    alert('Next mission would load here!');
+});
+
+
+// Update introduction text based on current page
+function updateIntroText() {
+    const content = introContent[selectedCharacter][currentIntroPage];
+    messageTitle.textContent = content.title;
+    
+    // Replace {username} placeholder with actual username
+    messageText.textContent = content.text.replace('{username}', username || 'Astronaut');
+    
+    // Show/hide next button based on whether there are more pages
+    if (currentIntroPage >= introContent[selectedCharacter].length - 1) {
+        nextBtn.innerHTML = 'Start Mission <span class="next-icon">→</span>';
+    } else {
+        nextBtn.innerHTML = 'Next <span class="next-icon">→</span>';
+    }
+}
+
+// Confirm character selection
+selectBtn.addEventListener('click', () => {
+    if (selectedCharacter) {
+        showCharacterIntro();
+        showScreen('intro');
+    } else {
+        alert('Please select a character first!');
+    }
+});
+
+
+// Next introduction page or start game
+nextBtn.addEventListener('click', () => {
+    if (currentIntroPage < introContent[selectedCharacter].length - 1) {
+        currentIntroPage++;
+        updateIntroText();
+    } else {
+    }
+});
+
+// Initialize the game
+window.addEventListener('load', () => {
+    initStars();
+});
+
+
+// Video controls
+const missionVideo = document.getElementById('mission-video');
+const playBtn = document.getElementById('play-btn');
+const pauseBtn = document.getElementById('pause-btn');
+const muteBtn = document.getElementById('mute-btn');
+
+playBtn.addEventListener('click', () => {
+    missionVideo.play();
+});
+
+pauseBtn.addEventListener('click', () => {
+    missionVideo.pause();
+});
+
+muteBtn.addEventListener('click', () => {
+    missionVideo.muted = !missionVideo.muted;
+    muteBtn.textContent = missionVideo.muted ? "🔇 Muted" : "🔊 Sound";
+});
+    </script>
+</body>
+</html>
