@@ -679,6 +679,199 @@
     .video-controls button:hover {
         background: rgba(76, 201, 240, 0.5);
     }
+
+    /* Quiz Screen Styles */
+    .quiz-screen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .quiz-container {
+        background: rgba(13, 27, 42, 0.9);
+        border-radius: 15px;
+        padding: 30px;
+        width: 90%;
+        max-width: 800px;
+        box-shadow: 0 0 25px rgba(76, 201, 240, 0.5);
+        border: 1px solid rgba(76, 201, 240, 0.3);
+        margin-bottom: 20px;
+    }
+    
+    .quiz-title {
+        font-size: 2rem;
+        color: #4cc9f0;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .quiz-progress {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        color: white;
+    }
+    
+    .question-container {
+        margin-bottom: 30px;
+    }
+    
+    .question-text {
+        font-size: 1.5rem;
+        color: white;
+        margin-bottom: 20px;
+    }
+    
+    .options-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .option-btn {
+        background: rgba(76, 201, 240, 0.2);
+        border: 1px solid #4cc9f0;
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 1.1rem;
+    }
+    
+    .option-btn:hover {
+        background: rgba(76, 201, 240, 0.4);
+        transform: translateY(-3px);
+    }
+    
+    .option-btn.selected {
+        background: rgba(58, 12, 163, 0.5);
+        box-shadow: 0 0 10px rgba(76, 201, 240, 0.7);
+    }
+    
+    .quiz-nav {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+    
+    .quiz-btn {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .prev-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+    
+    .prev-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .next-btn {
+        background: linear-gradient(45deg, #4361ee, #3a0ca3);
+        color: white;
+    }
+    
+    .next-btn:hover {
+        background: linear-gradient(45deg, #3a0ca3, #4361ee);
+    }
+    
+    .submit-btn {
+        background: linear-gradient(45deg, #f72585, #4361ee);
+        color: white;
+    }
+    
+    .submit-btn:hover {
+        background: linear-gradient(45deg, #4361ee, #f72585);
+    }
+    
+    /* Results Screen Styles */
+    .results-container {
+        background: rgba(13, 27, 42, 0.9);
+        border-radius: 15px;
+        padding: 40px;
+        width: 90%;
+        max-width: 600px;
+        box-shadow: 0 0 25px rgba(76, 201, 240, 0.5);
+        border: 1px solid rgba(76, 201, 240, 0.3);
+        text-align: center;
+    }
+    
+    .results-title {
+        font-size: 2.5rem;
+        color: #4cc9f0;
+        margin-bottom: 20px;
+    }
+    
+    .score-display {
+        font-size: 5rem;
+        color: #f72585;
+        margin: 20px 0;
+        text-shadow: 0 0 10px rgba(247, 37, 133, 0.5);
+    }
+    
+    .score-text {
+        font-size: 1.5rem;
+        color: white;
+        margin-bottom: 30px;
+    }
+    
+    .results-feedback {
+        font-size: 1.2rem;
+        color: white;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+    
+    .results-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .retry-btn {
+        background: linear-gradient(45deg, #4361ee, #3a0ca3);
+        color: white;
+    }
+    
+    .retry-btn:hover {
+        background: linear-gradient(45deg, #3a0ca3, #4361ee);
+    }
+    
+    .close-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+    
+    .close-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .options-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .quiz-nav {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .results-buttons {
+            flex-direction: column;
+        }
+    }
     
     </style>
 </head>
@@ -807,9 +1000,6 @@
 </div>
 
         <div class="mission-controls">
-            <button class="control-btn" id="map-btn">
-                <span>🗺️</span> Map
-            </button>
             <button class="control-btn" id="quiz-btn">
                 <span>❓</span> Quiz
             </button>
@@ -862,6 +1052,47 @@
         </div>
 
 
+<!-- Quiz Screen -->
+<div class="screen" id="quiz-screen">
+    <div class="quiz-screen">
+        <div class="quiz-container">
+            <h2 class="quiz-title">Space Knowledge Quiz</h2>
+            <div class="quiz-progress">
+                <span id="progress-text">Question 1 of 3</span>
+                <span id="score-text">Score: 0</span>
+            </div>
+            <div class="question-container">
+                <p class="question-text" id="question-text">Question will appear here</p>
+                <div class="options-container" id="options-container">
+                    <!-- Options will be inserted here by JavaScript -->
+                </div>
+            </div>
+            <div class="quiz-nav">
+                <button class="quiz-btn prev-btn" id="prev-question-btn">Previous</button>
+                <button class="quiz-btn next-btn" id="next-question-btn">Next Question</button>
+                <button class="quiz-btn submit-btn" id="submit-quiz-btn" style="display: none;">Submit Quiz</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results Screen -->
+<div class="screen" id="results-screen">
+    <div class="quiz-screen">
+        <div class="results-container">
+            <h2 class="results-title">Quiz Results</h2>
+            <div class="score-display" id="final-score">0/3</div>
+            <p class="score-text" id="score-message">You scored 0 out of 3</p>
+            <p class="results-feedback" id="results-feedback">Feedback will appear here</p>
+            <div class="results-buttons">
+                <button class="quiz-btn retry-btn" id="retry-quiz-btn">Retry Quiz</button>
+                <button class="quiz-btn close-btn" id="close-results-btn">Back to Mission</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
     </div>
 
     <script>
@@ -886,8 +1117,6 @@
         const missionCharacter = document.querySelector('.mission-character');
         const prevMissionBtn = document.getElementById('prev-mission-btn');
         const nextMissionBtn = document.getElementById('next-mission-btn');
-        const mapBtn = document.getElementById('map-btn');
-        const quizBtn = document.getElementById('quiz-btn');
         const scoreBtn = document.getElementById('score-btn');
         const challengeBtn = document.getElementById('challenge-btn');
 
@@ -978,61 +1207,76 @@
         // Switch between screens
         function showScreen(screenName) {
             // Hide all screens
-            titleScreen.classList.remove('active');
-            loginScreen.classList.remove('active');
-            characterScreen.classList.remove('active');
-            introScreen.classList.remove('active');
-            missionScreen.classList.remove('active');
+    titleScreen.classList.remove('active');
+    loginScreen.classList.remove('active');
+    characterScreen.classList.remove('active');
+    introScreen.classList.remove('active');
+    missionScreen.classList.remove('active');
+    indieGameScreen.classList.remove('active');
+    quizScreen.classList.remove('active');
+    resultsScreen.classList.remove('active');
             
             // Show the requested screen
-            switch(screenName) {
-                case 'title':
-                    titleScreen.classList.add('active');
-                    backBtn.style.visibility = 'hidden';
-                    currentScreen = 'title';
-                    break;
-                case 'login':
-                    loginScreen.classList.add('active');
-                    backBtn.style.visibility = 'visible';
-                    currentScreen = 'login';
-                    break;
-                case 'character':
-                    characterScreen.classList.add('active');
-                    backBtn.style.visibility = 'visible';
-                    currentScreen = 'character';
-                    break;
-                case 'intro':
-                    introScreen.classList.add('active');
-                    backBtn.style.visibility = 'visible';
-                    currentScreen = 'intro';
-                    break;
-                 case 'mission':
-                    missionScreen.classList.add('active');
-                    backBtn.style.visibility = 'visible';
-                    currentScreen = 'mission';
-                    break;    
-                  case 'indie-game':
-                    indieGameScreen.classList.add('active');
-                    backBtn.style.visibility = 'visible';
-                    currentScreen = 'indie-game';
-                    break;  
-            }
-        }
+          switch(screenName) {
+        case 'title':
+            titleScreen.classList.add('active');
+            backBtn.style.visibility = 'hidden';
+            currentScreen = 'title';
+            break;
+        case 'login':
+            loginScreen.classList.add('active');
+            backBtn.style.visibility = 'visible';
+            currentScreen = 'login';
+            break;
+        case 'character':
+            characterScreen.classList.add('active');
+            backBtn.style.visibility = 'visible';
+            currentScreen = 'character';
+            break;
+        case 'intro':
+            introScreen.classList.add('active');
+            backBtn.style.visibility = 'visible';
+            currentScreen = 'intro';
+            break;
+        case 'mission':
+            missionScreen.classList.add('active');
+            backBtn.style.visibility = 'visible';
+            currentScreen = 'mission';
+            break;    
+        case 'indie-game':
+            indieGameScreen.classList.add('active');
+            backBtn.style.visibility = 'visible';
+            currentScreen = 'indie-game';
+            break;
+        case 'quiz':
+            quizScreen.classList.add('active');
+            backBtn.style.visibility = 'visible';
+            currentScreen = 'quiz';
+            break;
+        case 'results':
+            resultsScreen.classList.add('active');
+            backBtn.style.visibility = 'visible';
+            currentScreen = 'results';
+            break;
+    }
+}
         
         // Handle back button
-        backBtn.addEventListener('click', () => {
-            if (currentScreen === 'login') {
-                showScreen('title');
-            } else if (currentScreen === 'character') {
-                showScreen('login');
-            } else if (currentScreen === 'intro') {
-                showScreen('character');
-            } else if (currentScreen === 'mission') {
-                showScreen('intro');
-            } else if (currentScreen === 'indie-game') { 
-                showScreen('mission');
-    } 
-        });
+backBtn.addEventListener('click', () => {
+    if (currentScreen === 'login') {
+        showScreen('title');
+    } else if (currentScreen === 'character') {
+        showScreen('login');
+    } else if (currentScreen === 'intro') {
+        showScreen('character');
+    } else if (currentScreen === 'mission') {
+        showScreen('intro');
+    } else if (currentScreen === 'indie-game') { 
+        showScreen('mission');
+    } else if (currentScreen === 'quiz' || currentScreen === 'results') {
+        showScreen('mission');
+    }
+});
         
         // Handle settings button
         settingsBtn.addEventListener('click', () => {
@@ -1137,13 +1381,6 @@ nextBtn.addEventListener('click', () => {
 });
 
 // Add event listeners for mission control buttons
-mapBtn.addEventListener('click', () => {
-    alert('Map feature would open here!');
-});
-
-quizBtn.addEventListener('click', () => {
-    alert('Quiz challenge would start here!');
-});
 
 scoreBtn.addEventListener('click', () => {
     alert('Your score would be displayed here!');
@@ -1252,6 +1489,211 @@ gameFullscreenBtn.addEventListener('click', () => {
         iframe.requestFullscreen();
     }
 });
+
+  // Quiz functionality
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultsScreen = document.getElementById('results-screen');
+    const quizBtn = document.getElementById('quiz-btn');
+    const closeResultsBtn = document.getElementById('close-results-btn');
+    const retryQuizBtn = document.getElementById('retry-quiz-btn');
+    
+    // Quiz questions and answers
+    const quizQuestions = [
+        {
+            question: "What is the primary cause of space debris?",
+            options: [
+                "Natural asteroid collisions",
+                "Human space activities",
+                "Solar radiation pressure",
+                "Gravitational forces from planets"
+            ],
+            correctAnswer: 1
+        },
+        {
+            question: "Why is space debris dangerous to spacecraft?",
+            options: [
+                "It blocks communication signals",
+                "It can cause catastrophic collisions due to high velocities",
+                "It creates gravitational disturbances",
+                "It interferes with navigation systems"
+            ],
+            correctAnswer: 1
+        },
+        {
+            question: "What is one method being developed to clean up space debris?",
+            options: [
+                "Using large nets to capture debris",
+                "Deploying magnetic fields to push debris away",
+                "Creating controlled re-entry paths for debris",
+                "All of the above"
+            ],
+            correctAnswer: 3
+        }
+    ];
+    
+    let currentQuestionIndex = 0;
+    let userAnswers = [];
+    let quizScore = 0;
+    
+    // DOM Elements for quiz
+    const progressText = document.getElementById('progress-text');
+    const scoreText = document.getElementById('score-text');
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const prevQuestionBtn = document.getElementById('prev-question-btn');
+    const nextQuestionBtn = document.getElementById('next-question-btn');
+    const submitQuizBtn = document.getElementById('submit-quiz-btn');
+    
+    // DOM Elements for results
+    const finalScore = document.getElementById('final-score');
+    const scoreMessage = document.getElementById('score-message');
+    const resultsFeedback = document.getElementById('results-feedback');
+    
+    // Initialize quiz
+    function initQuiz() {
+        currentQuestionIndex = 0;
+        userAnswers = Array(quizQuestions.length).fill(null);
+        quizScore = 0;
+        loadQuestion(currentQuestionIndex);
+        updateNavigationButtons();
+        updateProgress();
+        updateScore();
+    }
+    
+    // Load a question
+    function loadQuestion(index) {
+        const question = quizQuestions[index];
+        questionText.textContent = question.question;
+        
+        // Clear previous options
+        optionsContainer.innerHTML = '';
+        
+        // Add new options
+        question.options.forEach((option, optionIndex) => {
+            const optionBtn = document.createElement('button');
+            optionBtn.className = 'option-btn';
+            if (userAnswers[index] === optionIndex) {
+                optionBtn.classList.add('selected');
+            }
+            optionBtn.textContent = option;
+            optionBtn.addEventListener('click', () => selectAnswer(optionIndex));
+            optionsContainer.appendChild(optionBtn);
+        });
+    }
+    
+    // Select an answer
+    function selectAnswer(optionIndex) {
+        // Remove selected class from all options
+        const optionBtns = document.querySelectorAll('.option-btn');
+        optionBtns.forEach(btn => btn.classList.remove('selected'));
+        
+        // Add selected class to clicked option
+        optionBtns[optionIndex].classList.add('selected');
+        
+        // Store the answer
+        userAnswers[currentQuestionIndex] = optionIndex;
+        
+        // Update navigation buttons
+        updateNavigationButtons();
+    }
+    
+    // Update navigation buttons
+    function updateNavigationButtons() {
+        // Previous button
+        prevQuestionBtn.style.display = currentQuestionIndex > 0 ? 'block' : 'none';
+        
+        // Next/Submit button
+        if (currentQuestionIndex < quizQuestions.length - 1) {
+            nextQuestionBtn.style.display = 'block';
+            submitQuizBtn.style.display = 'none';
+        } else {
+            nextQuestionBtn.style.display = 'none';
+            submitQuizBtn.style.display = 'block';
+        }
+        
+        // Enable/disable next button based on whether an answer is selected
+        nextQuestionBtn.disabled = userAnswers[currentQuestionIndex] === null;
+        submitQuizBtn.disabled = userAnswers[currentQuestionIndex] === null;
+    }
+    
+    // Update progress text
+    function updateProgress() {
+        progressText.textContent = `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`;
+    }
+    
+    // Update score text
+    function updateScore() {
+        scoreText.textContent = `Score: ${quizScore}`;
+    }
+    
+    // Navigate to next question
+    function nextQuestion() {
+        if (currentQuestionIndex < quizQuestions.length - 1) {
+            currentQuestionIndex++;
+            loadQuestion(currentQuestionIndex);
+            updateNavigationButtons();
+            updateProgress();
+        }
+    }
+    
+    // Navigate to previous question
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            loadQuestion(currentQuestionIndex);
+            updateNavigationButtons();
+            updateProgress();
+        }
+    }
+    
+    // Calculate and display results
+    function showResults() {
+        // Calculate score
+        quizScore = 0;
+        userAnswers.forEach((answer, index) => {
+            if (answer === quizQuestions[index].correctAnswer) {
+                quizScore++;
+            }
+        });
+        
+        // Update results screen
+        finalScore.textContent = `${quizScore}/${quizQuestions.length}`;
+        scoreMessage.textContent = `You scored ${quizScore} out of ${quizQuestions.length}`;
+        
+        // Provide feedback based on score
+        if (quizScore === quizQuestions.length) {
+            resultsFeedback.textContent = "Excellent! You're a space debris expert! Your knowledge will be crucial for our mission success.";
+        } else if (quizScore >= quizQuestions.length / 2) {
+            resultsFeedback.textContent = "Good job! You have a solid understanding of space debris. Keep learning to become an expert!";
+        } else {
+            resultsFeedback.textContent = "Don't worry! Space debris is a complex topic. Review the material and try again to improve your knowledge.";
+        }
+        
+        // Show results screen
+        showScreen('results');
+    }
+    
+    // Event listeners for quiz navigation
+    prevQuestionBtn.addEventListener('click', prevQuestion);
+    nextQuestionBtn.addEventListener('click', nextQuestion);
+    submitQuizBtn.addEventListener('click', showResults);
+    
+    // Event listeners for results screen
+    closeResultsBtn.addEventListener('click', () => {
+        showScreen('mission');
+    });
+    
+    retryQuizBtn.addEventListener('click', () => {
+        initQuiz();
+        showScreen('quiz');
+    });
+    
+    // Update the existing quiz button event listener to initialize the quiz
+    quizBtn.addEventListener('click', () => {
+        initQuiz();
+        showScreen('quiz');
+    });
+
     </script>
 </body>
 </html>
