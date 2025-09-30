@@ -136,10 +136,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
         
         <ul class="nav-links" id="nav-links">
             <li><a href="./homepage.php" class="<?php echo ($current_page == './homepage.php') ? 'active' : ''; ?>">Home</a></li>
-            <li><a href="about.php" class="<?php echo ($current_page == 'about.php') ? 'active' : ''; ?>">About</a></li>
-            <li><a href="challenges.php" class="<?php echo ($current_page == 'challenges.php') ? 'active' : ''; ?>">Challenges</a></li>
-            <li><a href="solutions.php" class="<?php echo ($current_page == 'solutions.php') ? 'active' : ''; ?>">Solutions</a></li>
-            <li><a href="learn.php" class="<?php echo ($current_page == 'learn.php') ? 'active' : ''; ?>">Learn</a></li>
+            <li><a href="./map.php" class="<?php echo ($current_page == 'about.php') ? 'active' : ''; ?>">Urban Planner</a></li>
+            <li><a href="../game2.html" class="<?php echo ($current_page == 'challenges.php') ? 'active' : ''; ?>">Play Game</a></li>
+            <li><a href="floodforecast.php" class="<?php echo ($current_page == 'solutions.php') ? 'active' : ''; ?>">Flood Forecast</a></li>
+            <li><a href="./login.php" class="active">Login</a></li>
         </ul>
     </nav>
 
