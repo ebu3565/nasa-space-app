@@ -23,11 +23,11 @@ The web application integrates **multi-source urban datasets** (satellite imager
 
 The platform is built using a modern full-stack architecture:
 
-• **Frontend:** HTML, CSS, JS for responsive UI.
-• **Backend:** PHP, Node.js with Express.js for RESTful APIs.
-• **Database:** MySQL for structured and unstructured data.
-• **Cloud Hosting:** —
-• **Data Integration:** NASA Earth Observation APIs, IoT device data streams.
+* **Frontend:** HTML, CSS, JS for responsive UI.
+* **Backend:** PHP, Node.js with Express.js for RESTful APIs.
+* **Database:** MySQL for structured and unstructured data.
+* **Cloud Hosting:** —
+* **Data Integration:** NASA Earth Observation APIs, IoT device data streams.
 
 ---
 
