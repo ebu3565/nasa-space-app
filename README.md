@@ -1,3 +1,8 @@
+
+---
+
+# Sustainable Planet: Building Healthier Cities Together
+
 ## Demonstrative Working Prototype in Website:
 
 http://www.clouddrone.top/
@@ -5,6 +10,121 @@ http://www.clouddrone.top/
 ## Documentation:
 
 The web application integrates **multi-source urban datasets** (satellite imagery, IoT sensors, waste statistics, and flood forecasts) into a unified GIS platform for sustainable city planning. Planners can upload, analyze, and visualize data in real-time to support climate-resilient urban development.
+
+---
+
+## Feature
+
+**Sustainable Planet** is a decision-making platform for urban planners to track waste, pollution, and climate resilience data. It integrates **smart drones, IoT-enabled smart bins, and plastic collector vending machines** with **real-time dashboards** and **educational modules for citizens and kids**.
+
+---
+
+## Technology Stack
+
+The platform is built using a modern full-stack architecture:
+
+• **Frontend:** HTML, CSS, JS for responsive UI
+• **Backend:** PHP, Node.js with Express.js for RESTful APIs
+• **Database:** MySQL for structured and unstructured data
+• **Cloud Hosting:** —
+• **Data Integration:** NASA Earth Observation APIs, IoT device data streams
+
+---
+
+## API Configuration
+
+We fetch **real-time environmental data** using **NASA Open API (EONET)**. This provides access to **event-based Earth observation data** (floods, wildfires, storms, etc.), which is integrated into the system to generate **climate-resilience maps and alerts**. The configuration includes **API key authentication, rate-limit handling, and scheduled cron jobs** for automated data refresh.
+
+---
+
+## Usage
+
+• **Urban Planners** → Get dashboards for waste collection, flood zones, population growth, forest loss, and soil moisture.
+• **Citizens** → Learn about city health, waste habits, and plastic impact.
+• **Kids** → Play interactive games, watch NASA videos, and join eco-tasks.
+• **Policymakers** → Access data-driven reports for sustainable urban development.
+
+---
+
+## Responsive Design
+
+The web app uses **mobile-first responsive layouts**, ensuring smooth access across **desktops, tablets, and smartphones**. Key charts and maps **auto-adjust for any screen size**.
+
+---
+
+## Design System
+
+A **clean, accessible design system** powered by **Material Design + Bootstrap**. Components (**cards, modals, dashboards, charts**) follow **WCAG accessibility guidelines** for inclusivity.
+
+---
+
+## Project Structure
+
+The repository follows a **modular design**:
+
+* **/frontend** → UI code (HTML, CSS, JS)
+* **/backend** → API services (Node/Express)
+* **/database** → MySQL
+* **/tests** → Unit & integration test cases
+* **/docs** → Project documentation and guides
+
+---
+
+## Testing
+
+* **Unit Tests:** Jest + Mocha for backend & frontend logic
+* **Integration Tests:** API endpoint validation
+* **E2E Tests:** Playwright for full user workflows
+* **Load Testing:** JMeter to ensure scaling under traffic
+
+---
+
+## Build and Deploy
+
+* **CI/CD:** GitHub Actions for auto-build
+* **Deployment:** Docker containers deployed
+* **Monitoring:** CloudWatch dashboards for system health
+
+---
+
+## Performance
+
+Optimized for **low-latency data fetch** using **Redis caching**, **lazy loading of maps**, and **compression**. **CDN delivery** ensures fast global access.
+
+---
+
+## Customization
+
+Users can **customize dashboards** with widgets, data filters (waste, pollution, flood alerts), and **export reports in PDF/Excel** for policy planning.
+
+---
+
+## Contributing
+
+The project is **open for collaboration**. Developers can fork the repo, submit pull requests, or propose new features via **GitHub Issues**. Contribution guidelines are included for **standard coding practices**.
+
+---
+
+## Framing
+
+The platform frames **sustainable cities as an integrated ecosystem**, connecting **data, people, and policy**. It’s not just a tool but a **global urban intelligence hub**.
+
+---
+
+## Educational Configuration
+
+Includes **modules for schools**:
+
+* **Interactive eco-games**
+* **NASA Earth learning videos**
+* **Quizzes** on climate and waste
+* **Localized citizen tasks** to build awareness
+
+---
+
+## Acknowledgement
+
+We acknowledge **NASA Earth Data (EONET API)** for climate data, and **open-source contributors** who help maintain the platform. Special thanks to **Team Cloud Drone** for leading the initiative against waste pollution in Bangladesh.
 
 ---
 
@@ -75,3 +195,4 @@ The web application integrates **multi-source urban datasets** (satellite imager
 * **Planner Adoption** – Number of planners actively using the platform.
 * **Sustainability Outcomes** – % decrease in urban waste pollution, improved recycling rates.
 
+---
