@@ -208,7 +208,7 @@ We acknowledge **NASA Earth Data (EONET API)** for climate data, and **open-sour
 
 ---
 
-**Our Mission:**
+## Our Mission:
 Our goal is remove waste pollution and create cleaner, healthier cities where people can thrive. To achieve this, we are developing a web application called Sustainable Planet — a decision-making platform designed for urban planners.
 
 ---
