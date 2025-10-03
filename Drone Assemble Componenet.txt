@@ -1,0 +1,372 @@
+1) Hardware at a glance
+
+Flight + airframe (standard RC parts)
+
+450-class quad frame (or any stable 5″–10″ quad)
+
+Flight controller: Pixhawk (ArduPilot) or Matek H743 (ArduPilot)
+
+GPS/compass: u-blox M8N or better
+
+30–40A ESCs, 2212–2807 motors + props suited to your AUW
+
+Battery: 4S–6S LiPo (with proper fire-safe handling)
+
+Companion computer (vision)
+
+Raspberry Pi 4B (4–8 GB) (or CM4)
+
+Camera: Raspberry Pi Camera v3 (or any UVC USB camera)
+
+SD card (32–128 GB), heatsink/fan for the Pi
+
+Power: 5 V 3 A BEC from flight battery (common ground!)
+
+Sensors / helpers (optional)
+
+Down-facing lidar (Benewake TFmini-S) for low-alt hold in ArduPilot
+
+Buzzer on Pi GPIO for audible hit
+
+Gimbal (2-axis) if you want stabilized video
+
+Links
+
+Telemetry: Pixhawk ↔ Pi via TELEM2 (UART) or USB
+
+Protocol: MAVLink (ArduPilot) — Pi reads GPS, altitude, mode
+
+Safety: Follow local UAV laws, set geofences/RTL, use prop guards for testing, and handle LiPos safely. Do initial tests without props.
+
+2) Wiring (text map)
+
+Pixhawk TELEM2 ↔ Pi UART (recommended):
+
+TELEM2 TX → Pi GPIO15 (RXD)
+
+TELEM2 RX → Pi GPIO14 (TXD)
+
+GND ↔ GND
+
+Set TELEM2 to MAVLink2, 921600 or 57600 baud in Mission Planner.
+
+Power
+
+5 V BEC → Pi 5V & GND (separate from Pixhawk 5 V rail; share ground)
+
+Pi camera → CSI ribbon (or USB webcam)
+
+Optional Buzzer → Pi GPIO18 with 220 Ω to active buzzer input, buzzer GND → GND.
+
+3) Software overview
+
+ArduPilot on Pixhawk (Copter 4.x), GPS verified in Mission Planner.
+
+Raspberry Pi OS 64-bit on the Pi.
+
+Python vision app (below) using Ultralytics YOLO + OpenCV:
+
+Detects classes like bottle, cup, plastic bag, trash.
+
+Reads GPS/alt from MAVLink, stamps detections, saves GeoJSON + MP4.
+
+POSTs JSON to your web app.
+
+Mini web API (Flask) to receive detections and view a quick map.
+
+# On Raspberry Pi (no internet in flight; do this during setup)
+sudo apt update && sudo apt install -y python3-pip python3-opencv git
+pip3 install ultralytics==8.2.0 pymavlink flask gevent gevent-websocket
+# For picamera2 (if using CSI camera):
+sudo apt install -y python3-libcamera python3-kms++ python3-picamera2
+
+
+5) Vision + MAVLink app (Raspberry Pi)
+
+#!/usr/bin/env python3
+import os, time, json, math, threading, datetime
+from collections import deque
+
+# Camera
+USE_PICAMERA2 = True  # set False to use USB webcam via cv2.VideoCapture(0)
+
+import cv2
+try:
+    if USE_PICAMERA2:
+        from picamera2 import Picamera2
+except Exception:
+    USE_PICAMERA2 = False
+
+# YOLO
+from ultralytics import YOLO
+
+# MAVLink
+from pymavlink import mavutil
+
+# HTTP
+import urllib.request
+
+# ---------- USER CONFIG ----------
+MODEL_PATH = "yolov8n.pt"          # or "best.pt" if you trained a custom litter model
+DETECT_CLASSES = {"bottle", "cup", "backpack", "handbag", "book", "vase", "cell phone", "chair", "bench", "truck", "person", "sink", "toilet", "refrigerator", "scissors", "fork", "spoon", "knife", "umbrella", "kite", "sports ball", "wine glass", "sandwich", "bowl", "banana", "apple", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "laptop", "tv", "mouse", "remote", "keyboard", "toaster", "hair drier", "toothbrush", "tie", "skateboard", "bicycle", "motorcycle", "traffic light", "fire hydrant", "stop sign", "bench", "trash"}  # keep wide for demo
+CONF_THRESH = 0.45
+IOU_THRESH = 0.45
+POST_URL   = "http://YOUR-SERVER:5000/api/detect"  # <-- set your server IP/host
+
+MAVLINK_DEV = "/dev/serial0"  # Pi UART mapped to Pixhawk TELEM2 via dtoverlay=uart0
+MAV_BAUD    = 57600
+
+RECORD_VIDEO = True
+OUT_DIR = "/home/pi/waste_logs"
+SESSION_NAME = datetime.datetime.utcnow().strftime("session_%Y%m%d_%H%M%S")
+
+BUZZER_GPIO = 18  # optional; set to None to disable
+
+# ---------- SETUP ----------
+os.makedirs(OUT_DIR, exist_ok=True)
+geojson_path = os.path.join(OUT_DIR, f"{SESSION_NAME}.geojson")
+video_path   = os.path.join(OUT_DIR, f"{SESSION_NAME}.mp4")
+
+# GeoJSON init
+geojson = {"type": "FeatureCollection", "features": []}
+with open(geojson_path, "w") as f:
+    json.dump(geojson, f)
+
+# Buzzer
+try:
+    if BUZZER_GPIO is not None:
+        import RPi.GPIO as GPIO
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(BUZZER_GPIO, GPIO.OUT)
+        GPIO.output(BUZZER_GPIO, False)
+except Exception:
+    BUZZER_GPIO = None
+
+# MAVLink connection
+mav = mavutil.mavlink_connection(MAVLINK_DEV, baud=MAV_BAUD)
+# Wait for heartbeat
+mav.wait_heartbeat(timeout=10)
+
+lat, lon, alt = None, None, None
+hdop = None
+lock = threading.Lock()
+
+def mav_reader():
+    global lat, lon, alt, hdop
+    while True:
+        msg = mav.recv_match(blocking=True, timeout=1)
+        if not msg: 
+            continue
+        m = msg.to_dict()
+        if msg.get_type() == "GLOBAL_POSITION_INT":
+            with lock:
+                lat = m.get("lat", None)
+                lon = m.get("lon", None)
+                alt = m.get("alt", None)  # mm above MSL
+        elif msg.get_type() == "GPS_RAW_INT":
+            with lock:
+                hdop = m.get("eph", None)  # HDOP x100
+
+thr = threading.Thread(target=mav_reader, daemon=True)
+thr.start()
+
+# Camera setup
+if USE_PICAMERA2:
+    picam = Picamera2()
+    cfg = picam.create_video_configuration({"size": (1280, 720)})
+    picam.configure(cfg)
+    picam.start()
+else:
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+
+# Video writer
+writer = None
+if RECORD_VIDEO:
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    writer = cv2.VideoWriter(video_path, fourcc, 20.0, (1280, 720))
+
+# Load model
+model = YOLO(MODEL_PATH)
+
+# Simple FPS calc
+t_last = time.time()
+frame_count = 0
+
+def beep(ms=120):
+    if BUZZER_GPIO is None: return
+    GPIO.output(BUZZER_GPIO, True)
+    time.sleep(ms/1000.0)
+    GPIO.output(BUZZER_GPIO, False)
+
+def current_fix():
+    with lock:
+        if lat is None or lon is None:
+            return None
+        return {
+            "lat": lat/1e7,
+            "lon": lon/1e7,
+            "alt_m": (alt/1000.0) if alt else None,
+            "hdop": (hdop/100.0) if hdop else None
+        }
+
+def append_geojson(point, props):
+    with open(geojson_path, "r+") as f:
+        data = json.load(f)
+        feat = {
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [point["lon"], point["lat"]]},
+            "properties": props
+        }
+        data["features"].append(feat)
+        f.seek(0)
+        json.dump(data, f)
+        f.truncate()
+
+def post_detection(payload):
+    try:
+        req = urllib.request.Request(POST_URL, data=json.dumps(payload).encode("utf-8"),
+                                     headers={"Content-Type": "application/json"})
+        urllib.request.urlopen(req, timeout=2).read()
+    except Exception:
+        pass
+
+print("[INFO] Running detection loop… Press Ctrl+C to stop.")
+try:
+    while True:
+        # Grab frame
+        if USE_PICAMERA2:
+            frame = picam.capture_array()
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        else:
+            ret, frame = cap.read()
+            if not ret: 
+                continue
+
+        # Inference
+        res = model.predict(frame, conf=CONF_THRESH, iou=IOU_THRESH, verbose=False)[0]
+        hits = []
+        for b in res.boxes:
+            cls_id = int(b.cls[0])
+            cls = res.names[cls_id]
+            conf = float(b.conf[0])
+            if cls in DETECT_CLASSES:
+                x1, y1, x2, y2 = map(int, b.xyxy[0])
+                hits.append((cls, conf, (x1,y1,x2,y2)))
+
+        # Draw + notify
+        fix = current_fix()
+        for cls, conf, (x1,y1,x2,y2) in hits:
+            cv2.rectangle(frame, (x1,y1), (x2,y2), (0,255,0), 2)
+            cv2.putText(frame, f"{cls} {conf:.2f}", (x1, max(20,y1-8)),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), 2)
+
+            if fix:  # only log if we have GPS
+                payload = {
+                    "class": cls, "conf": round(conf,3),
+                    "lat": fix["lat"], "lon": fix["lon"],
+                    "alt_m": fix["alt_m"], "hdop": fix["hdop"],
+                    "ts": int(time.time())
+                }
+                append_geojson({"lat":fix["lat"], "lon":fix["lon"]}, payload)
+                post_detection(payload)
+                beep(60)
+
+        # OSD
+        if fix:
+            cv2.putText(frame, f"GPS: {fix['lat']:.6f}, {fix['lon']:.6f}  ALT:{fix['alt_m']}",
+                        (10,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1)
+        cv2.putText(frame, f"Detections: {len(hits)}", (10,42),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1)
+
+        if writer: writer.write(frame)
+        cv2.imshow("Waste Finder", frame)
+        if cv2.waitKey(1) & 0xFF == 27:  # ESC
+            break
+
+except KeyboardInterrupt:
+    pass
+finally:
+    if writer: writer.release()
+    if not USE_PICAMERA2 and 'cap' in globals(): cap.release()
+    cv2.destroyAllWindows()
+    try:
+        if BUZZER_GPIO is not None:
+            GPIO.cleanup(BUZZER_GPIO)
+    except Exception:
+        pass
+from flask import Flask, request, jsonify, render_template_string
+from datetime import datetime
+
+app = Flask(__name__)
+DETECTIONS = []
+
+@app.post("/api/detect")
+def ingest():
+    j = request.get_json(force=True)
+    j["server_ts"] = int(datetime.utcnow().timestamp())
+    DETECTIONS.append(j)
+    return jsonify(ok=True)
+
+# simple page with Leaflet map
+TPL = """
+<!doctype html><html><head>
+<meta charset="utf-8"/><title>Waste Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>html,body,#map{height:100%;margin:0}</style></head>
+<body><div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map = L.map('map').setView([23.8103,90.4125], 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+           {maxZoom:19}).addTo(map);
+async function refresh(){
+  const r = await fetch('/api/list'); const data = await r.json();
+  const g = L.layerGroup().addTo(map);
+  data.forEach(d=>{
+    if(!d.lat || !d.lon) return;
+    const m = L.marker([d.lat,d.lon]).addTo(g);
+    m.bindPopup(`${d.class} (${(d.conf||0)*100|0}%)
+    <br/>${new Date((d.ts||d.server_ts)*1000).toISOString()}`);
+  })
+}
+refresh();
+</script>
+</body></html>
+"""
+
+@app.get("/")
+def index():
+    return render_template_string(TPL)
+
+@app.get("/api/list")
+def list_():
+    return jsonify(DETECTIONS)
+
+if __name__ == "__main__":
+    app.run("0.0.0.0", 5000, debug=False)
+
+7) Flight & testing checklist
+
+Bench first (no props)
+
+Power Pixhawk + Pi, confirm Pi gets GPS via MAVLink (GLOBAL_POSITION_INT updating).
+
+Run waste_drone.py, show camera preview; wave a plastic bottle → see detection boxes.
+
+Verify a detection appears on http://YOUR-SERVER:5000/ (map pin shows up).
+
+Field test (props on, safe area)
+
+Use Loiter or Auto waypoint mission at 30–60 m AGL.
+
+Confirm detections log to GeoJSON and server.
+
+Review MP4 to refine confidence thresholds and classes.
+
+Tuning
+
+Lower CONF_THRESH if you’re missing objects; raise to reduce false positives.
+
+Train a custom YOLO dataset on your local litter images for best accuracy.
