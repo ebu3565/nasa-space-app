@@ -1,6 +1,6 @@
 ## Demonstrative Working Prototype in Website:
 
-[www]http://www.clouddrone.top/
+http://www.clouddrone.top/
 
 ## Documentation:
 
@@ -74,3 +74,4 @@ The web application integrates **multi-source urban datasets** (satellite imager
 * **Data Processing Speed** – Time taken to clean and analyze datasets.
 * **Planner Adoption** – Number of planners actively using the platform.
 * **Sustainability Outcomes** – % decrease in urban waste pollution, improved recycling rates.
+
