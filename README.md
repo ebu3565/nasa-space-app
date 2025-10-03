@@ -38,14 +38,14 @@ We fetch **real-time environmental data** using **NASA Open API (EONET)**. This 
 ---
 
 **NASA Data Source :**
-* 1.	https://www.earthdata.nasa.gov/centers/sedac-daac
-* 2.	https://www.earthdata.nasa.gov/learn/data-in-action/  forest-expansion-drought-impact-woodland-mapping
-* 3.	https://www.earthdata.nasa.gov/data/catalog/ghrc-daac-gpmtfmifld-1
-* 4.	API  : https://eonet.gsfc.nasa.gov/docs/v2.1
-* 5.	https://earth.gsfc.nasa.gov/hydro/data/nasa-usda-global-soil-moisture-data
-* 6.	https://developers.google.com/earth-engine/datasets/catalog/GLOBAL_FLOOD_DB_MODIS_EVENTS_V1
-* 7.	https://developers.google.com/earth-engine/datasets/catalog/projects_landandcarbon_assets_
-* 8.	https://developers.google.com/earth-engine/datasets/tags/soil-moisture 
+1.	https://www.earthdata.nasa.gov/centers/sedac-daac
+2.	https://www.earthdata.nasa.gov/learn/data-in-action/  forest-expansion-drought-impact-woodland-mapping
+3.	https://www.earthdata.nasa.gov/data/catalog/ghrc-daac-gpmtfmifld-1
+4.	API  : https://eonet.gsfc.nasa.gov/docs/v2.1
+5.	https://earth.gsfc.nasa.gov/hydro/data/nasa-usda-global-soil-moisture-data
+6.	https://developers.google.com/earth-engine/datasets/catalog/GLOBAL_FLOOD_DB_MODIS_EVENTS_V1
+7.	https://developers.google.com/earth-engine/datasets/catalog/projects_landandcarbon_assets_
+8.	https://developers.google.com/earth-engine/datasets/tags/soil-moisture 
 
 ---
 ## Usage
