@@ -1,0 +1,316 @@
+Core parts
+
+Arduino Uno
+
+HC-SR04 ultrasonic (top-down, aimed at trash)
+
+16×2 I²C LCD (HD44780 + I²C backpack, addr usually 0x27 or 0x3F)
+
+ESP8266 ESP-01 (AT firmware)
+
+Stable 5V supply; ESP8266 must have a solid 3.3V (use regulator) and level-shifting for RX if possible.
+
+Pins
+
+HC-SR04: VCC→5V, GND→GND, TRIG→D6, ECHO→D7
+
+LCD: VCC→5V, GND→GND, SDA→A4, SCL→A5
+
+ESP-01:
+
+TX (ESP) → D10 (Uno RX via SoftwareSerial)
+
+RX (ESP) ← D11 (Uno TX via 3.3V level-shift/voltage divider!)
+
+CH_PD→3.3V, VCC→3.3V (≥300mA), GND→GND
+
+(Optional) RST→3.3V
+
+POST /api/bin/ingest HTTP/1.1
+Host: myserver.example.com
+Content-Type: application/json
+Content-Length: ...
+
+{"bin_id":"BIN-01","fill_percent":73,"distance_cm":16.4,"ts":1696323456}
+
+
+/*
+  Smart Bin (Arduino Uno + HC-SR04 + I2C 16x2 LCD + ESP8266 AT)
+  - Shows fill level on LCD
+  - Sends JSON to web app over Wi-Fi (ESP8266 AT commands)
+  Author: GPT-5 Thinking
+*/
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <SoftwareSerial.h>
+
+/* ----------- User Config ----------- */
+// Bin geometry: vertical distance from sensor face (top) to bottom
+const float BIN_HEIGHT_CM      = 60.0;   // <-- measure your bin interior height
+const float FULL_THRESHOLD_CM  = 12.0;   // consider "full" when trash is within 12 cm of top
+
+// Wi-Fi & server (EDIT THESE)
+const char* WIFI_SSID          = "YourWiFiSSID";
+const char* WIFI_PASS          = "YourWiFiPassword";
+const char* SERVER_HOST        = "your.server.com";   // no protocol, just host
+const int   SERVER_PORT        = 80;                  // 80 for HTTP
+const char* SERVER_PATH        = "/api/bin/ingest";   // your endpoint path
+const char* BIN_ID             = "BIN-01";
+
+// How often to send (ms)
+const unsigned long POST_PERIOD_MS = 15000;
+
+/* ----------- Pins ----------- */
+const uint8_t TRIG_PIN = 6;
+const uint8_t ECHO_PIN = 7;
+
+// ESP8266 on SoftwareSerial (9600 baud)
+const uint8_t ESP_RX = 10; // Uno receives on 10  (connect to ESP-TX)
+const uint8_t ESP_TX = 11; // Uno transmits on 11 (go to ESP-RX via level shift)
+
+// LCD I2C
+LiquidCrystal_I2C lcd(0x27, 16, 2); // change 0x27 to 0x3F if needed
+
+SoftwareSerial esp(ESP_RX, ESP_TX); // RX, TX
+
+/* ----------- State ----------- */
+unsigned long lastPost = 0;
+unsigned long lastLCD = 0;
+bool wifiReady = false;
+
+/* ----------- Helpers ----------- */
+float measureDistanceCm(uint8_t trig, uint8_t echo) {
+  digitalWrite(trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trig, LOW);
+  unsigned long dur = pulseIn(echo, HIGH, 30000UL); // timeout ~30ms
+  if (dur == 0) return NAN;
+  return dur / 58.0; // HC-SR04 conversion
+}
+
+float clampf(float v, float lo, float hi) {
+  if (v < lo) return lo;
+  if (v > hi) return hi;
+  return v;
+}
+
+void lcdCenterPrint(uint8_t row, const String& s) {
+  uint8_t len = s.length();
+  int8_t start = (16 - len) / 2;
+  if (start < 0) start = 0;
+  lcd.setCursor(0, row);
+  lcd.print("                ");
+  lcd.setCursor(start, row);
+  lcd.print(s);
+}
+
+bool espWaitFor(const char* token, unsigned long timeout = 2000) {
+  unsigned long start = millis();
+  String buf;
+  while (millis() - start < timeout) {
+    while (esp.available()) {
+      char c = (char)esp.read();
+      buf += c;
+      if (buf.indexOf(token) >= 0) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+void espFlushInput() {
+  while (esp.available()) esp.read();
+}
+
+bool espSendCmd(const char* cmd, const char* expect, unsigned long timeout = 2000) {
+  espFlushInput();
+  esp.print(cmd);
+  esp.print("\r\n");
+  return espWaitFor(expect, timeout);
+}
+
+bool espInitWiFi() {
+  // Basic check
+  if (!espSendCmd("AT", "OK", 1500)) return false;
+
+  // Station mode
+  if (!espSendCmd("AT+CWMODE=1", "OK", 1500)) return false;
+
+  // Join AP
+  {
+    String join = String("AT+CWJAP=\"") + WIFI_SSID + "\",\"" + WIFI_PASS + "\"";
+    if (!espSendCmd(join.c_str(), "WIFI CONNECTED", 8000)) return false;
+    if (!espWaitFor("OK", 5000)) return false;
+  }
+
+  // Single connection mode
+  if (!espSendCmd("AT+CIPMUX=0", "OK", 1500)) return false;
+
+  return true;
+}
+
+bool httpPostJSON(const char* host, int port, const char* path, const String& json) {
+  // TCP connect
+  {
+    String cipstart = String("AT+CIPSTART=\"TCP\",\"") + host + "\"," + String(port);
+    if (!espSendCmd(cipstart.c_str(), "CONNECT", 4000)) return false;
+  }
+
+  // Build HTTP request
+  String req;
+  req  = String("POST ") + path + " HTTP/1.1\r\n";
+  req += "Host: " + String(host) + "\r\n";
+  req += "User-Agent: SmartBin-Uno\r\n";
+  req += "Content-Type: application/json\r\n";
+  req += "Connection: close\r\n";
+  req += "Content-Length: " + String(json.length()) + "\r\n\r\n";
+  req += json;
+
+  // Tell ESP length
+  {
+    String cipsend = String("AT+CIPSEND=") + String(req.length());
+    if (!espSendCmd(cipsend.c_str(), ">")) {
+      espSendCmd("AT+CIPCLOSE", "OK", 1000);
+      return false;
+    }
+  }
+
+  // Send payload
+  esp.print(req);
+
+  // Wait for "SEND OK"
+  if (!espWaitFor("SEND OK", 4000)) {
+    espSendCmd("AT+CIPCLOSE", "OK", 1000);
+    return false;
+  }
+
+  // (Optional) read HTTP/1.1 response … here we just wait for "CLOSED"
+  espWaitFor("CLOSED", 4000);
+  return true;
+}
+
+/* ----------- Setup ----------- */
+void setup() {
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  // Serial monitors
+  Serial.begin(115200);
+  esp.begin(9600); // Make sure ESP8266 AT baud matches this
+  delay(50);
+
+  lcd.init();
+  lcd.backlight();
+  lcd.clear();
+  lcdCenterPrint(0, "SMART BIN");
+  lcdCenterPrint(1, "Booting...");
+
+  // Try Wi-Fi
+  lcd.clear();
+  lcdCenterPrint(0, "WiFi connect");
+  bool ok = espInitWiFi();
+  wifiReady = ok;
+  lcdCenterPrint(1, ok ? "OK" : "FAILED");
+
+  delay(800);
+  lcd.clear();
+}
+
+/* ----------- Loop ----------- */
+void loop() {
+  // Measure distance & compute fill
+  float d = measureDistanceCm(TRIG_PIN, ECHO_PIN);
+  if (isnan(d)) d = BIN_HEIGHT_CM; // if faulty read, assume empty
+  d = clampf(d, 0, 400);
+
+  // Fill% = (binHeight - distance)/binHeight
+  float fillRatio = clampf((BIN_HEIGHT_CM - d) / BIN_HEIGHT_CM, 0.0f, 1.0f);
+  int   fillPct   = (int)(fillRatio * 100.0f + 0.5f);
+  bool  isFull    = (d <= FULL_THRESHOLD_CM);
+
+  unsigned long now = millis();
+
+  // Update LCD every 300ms
+  if (now - lastLCD >= 300) {
+    lastLCD = now;
+    char line0[17];
+    char line1[17];
+    snprintf(line0, sizeof(line0), "Fill: %3d%%", fillPct);
+    snprintf(line1, sizeof(line1), "Dist:%5.1fcm", d);
+
+    lcd.setCursor(0, 0);
+    lcd.print("                ");
+    lcd.setCursor(0, 0);
+    lcd.print(line0);
+
+    lcd.setCursor(0, 1);
+    if (isFull) {
+      lcd.print(" FULL!           ");
+    } else {
+      lcd.print("                ");
+      lcd.setCursor(0, 1);
+      lcd.print(line1);
+    }
+  }
+
+  // Periodic POST
+  if (wifiReady && (now - lastPost >= POST_PERIOD_MS)) {
+    lastPost = now;
+
+    // Simple timestamp (seconds since boot for demo)
+    unsigned long ts = millis() / 1000UL;
+
+    // Build JSON
+    String json = String("{\"bin_id\":\"") + BIN_ID + "\","
+                + "\"fill_percent\":" + String(fillPct) + ","
+                + "\"distance_cm\":" + String(d, 1) + ","
+                + "\"ts\":" + String(ts) + "}";
+
+    Serial.println(F("Posting JSON:"));
+    Serial.println(json);
+
+    bool ok = httpPostJSON(SERVER_HOST, SERVER_PORT, SERVER_PATH, json);
+    if (!ok) {
+      Serial.println(F("POST failed. Will retry next cycle."));
+      // Optional: try to re-init WiFi if repeated failures
+    } else {
+      Serial.println(F("POST OK."));
+    }
+  }
+}
+Setup notes
+
+LCD address: If the screen is blank, change LiquidCrystal_I2C lcd(0x27,16,2) to 0x3F.
+
+ESP8266 baud: Ensure it speaks 9600. If not, temporarily use a USB-TTL adapter to send:
+
+AT+UART_DEF=9600,8,1,0,0
+
+
+Endpoint: Replace SERVER_HOST, SERVER_PORT, and SERVER_PATH with your API.
+
+CORS / backend: Your server should accept Content-Type: application/json and parse the body. Return a 200 so the module closes cleanly.
+
+Calibrate
+
+Measure the real bin height (sensor face → bottom) and set BIN_HEIGHT_CM.
+
+Decide when to call it “FULL” (e.g., top 10–15 cm) and set FULL_THRESHOLD_CM.
+
+If readings jump, consider adding a small moving average (I kept it lean for Uno RAM, but can add if you want).
+
+Want upgrades?
+
+Two ultrasonics (1 for hand/lid, 1 for fill)
+
+Servo auto-lid with debounce
+
+Retry + reconnect logic for Wi-Fi
+
+HTTPS (easier on ESP32 than AT modules)
+
+OLED (SSD1306) for a nicer UI
