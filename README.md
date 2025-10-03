@@ -39,10 +39,10 @@ We fetch **real-time environmental data** using **NASA Open API (EONET)**. This 
 
 ## Usage
 
-• **Urban Planners** → Get dashboards for waste collection, flood zones, population growth, forest loss, and soil moisture.
-• **Citizens** → Learn about city health, waste habits, and plastic impact.
-• **Kids** → Play interactive games, watch NASA videos, and join eco-tasks.
-• **Policymakers** → Access data-driven reports for sustainable urban development.
+* **Urban Planners** → Get dashboards for waste collection, flood zones, population growth, forest loss, and soil moisture.
+* **Citizens** → Learn about city health, waste habits, and plastic impact.
+* **Kids** → Play interactive games, watch NASA videos, and join eco-tasks.
+* **Policymakers** → Access data-driven reports for sustainable urban development.
 
 ---
 
